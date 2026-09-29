@@ -9,9 +9,13 @@ topics:
   - Copilot
 children:
   - /coding-agent
+  - /copilot-cli
   - /code-review
-  - /about-copilot-cli
+  - /copilot-memory
+  - /about-third-party-agents
   - /openai-codex
+  - /anthropic-claude
+  - /about-agent-skills
   - /enterprise-management
 contentType: concepts
 ---

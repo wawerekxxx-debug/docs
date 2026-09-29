@@ -12,6 +12,7 @@ const DEFAULT_MAX_REQUEST_TIMEOUT = isDev ? 15_000 : 10_000
 
 export const ROOT = process.env.ROOT || '.'
 export const USER_LANGUAGE_COOKIE_NAME = 'user_language'
+export const USER_VERSION_COOKIE_NAME = 'user_version'
 export const TRANSLATIONS_ROOT = process.env.TRANSLATIONS_ROOT || 'translations'
 export const MAX_REQUEST_TIMEOUT = process.env.REQUEST_TIMEOUT
   ? parseInt(process.env.REQUEST_TIMEOUT, 10)
@@ -34,3 +35,6 @@ export const minimumNotFoundHtml = `
  &bull; <a href=https://docs.github.com/site-policy/privacy-policies/github-privacy-statement>Privacy</a>
 </small>
 `.replace(/\n/g, '')
+
+export const ANALYTICS_ENABLED = true
+export const HOVERCARDS_ENABLED = true

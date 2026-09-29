@@ -19,7 +19,21 @@
   business: true
   enterprise: true
 
-- name: Claude Opus 4.1
+- name: Claude Opus 4.5
+  free: false
+  pro: true
+  pro_plus: true
+  business: true
+  enterprise: true
+
+- name: Claude Opus 4.6
+  free: false
+  pro: true
+  pro_plus: true
+  business: true
+  enterprise: true
+
+- name: Claude Opus 4.6 (fast mode) (preview)
   free: false
   pro: false
   pro_plus: true
@@ -40,7 +54,35 @@
   business: true
   enterprise: true
 
+- name: Claude Sonnet 4.6
+  free: false
+  pro: true
+  pro_plus: true
+  business: true
+  enterprise: true
+
 - name: Gemini 2.5 Pro
+  free: false
+  pro: true
+  pro_plus: true
+  business: true
+  enterprise: true
+
+- name: Gemini 3 Flash
+  free: false
+  pro: true
+  pro_plus: true
+  business: true
+  enterprise: true
+
+- name: Gemini 3 Pro
+  free: false
+  pro: true
+  pro_plus: true
+  business: true
+  enterprise: true
+
+- name: Gemini 3.1 Pro
   free: false
   pro: true
   pro_plus: true
@@ -54,22 +96,8 @@
   business: true
   enterprise: true
 
-- name: GPT-5
-  free: false
-  pro: true
-  pro_plus: true
-  business: true
-  enterprise: true
-
 - name: GPT-5 mini
   free: true
-  pro: true
-  pro_plus: true
-  business: true
-  enterprise: true
-
-- name: GPT-5-Codex
-  free: false
   pro: true
   pro_plus: true
   business: true
@@ -96,6 +124,34 @@
   business: true
   enterprise: true
 
+- name: GPT-5.1-Codex-Max
+  free: false
+  pro: true
+  pro_plus: true
+  business: true
+  enterprise: true
+
+- name: GPT-5.2
+  free: false
+  pro: true
+  pro_plus: true
+  business: true
+  enterprise: true
+
+- name: GPT-5.2-Codex
+  free: false
+  pro: true
+  pro_plus: true
+  business: true
+  enterprise: true
+
+- name: GPT-5.3-Codex
+  free: false
+  pro: true
+  pro_plus: true
+  business: true
+  enterprise: true
+
 - name: Grok Code Fast 1
   free: false
   pro: true
@@ -107,5 +163,12 @@
   free: true
   pro: true
   pro_plus: true
+  business: false
+  enterprise: false
+
+- name: Goldeneye
+  free: true
+  pro: false
+  pro_plus: false
   business: false
   enterprise: false

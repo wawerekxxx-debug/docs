@@ -1,0 +1,17 @@
+---
+title: Troubleshooting dependency security
+shortTitle: Troubleshoot dependency security
+intro: Get help with Dependabot and dependency detection.
+versions:
+  fpt: '*'
+  ghes: '*'
+  ghec: '*'
+contentType: how-tos
+redirect_from:
+  - /code-security/dependabot/troubleshooting-dependabot
+children:
+  - /dependabot-updates-stopped
+  - /troubleshooting-the-dependency-graph
+  - /troubleshooting-dependabot-on-github-actions
+---
+

@@ -2,6 +2,7 @@ import type { Response, NextFunction } from 'express'
 import { fetchWithRetry } from '@/frame/lib/fetch-utils'
 
 import statsd from '@/observability/lib/statsd'
+import { createLogger } from '@/observability/logger'
 import {
   firstVersionDeprecatedOnNewSite,
   lastVersionWithoutArchivedRedirectsFile,
@@ -18,6 +19,8 @@ import { pathLanguagePrefixed, languagePrefixPathRegex } from '@/languages/lib/l
 import getRedirect, { splitPathByLanguage } from '@/redirects/lib/get-redirect'
 import getRemoteJSON from '@/frame/lib/get-remote-json'
 import { ExtendedRequest } from '@/types'
+
+const logger = createLogger(import.meta.url)
 
 const OLD_PUBLIC_AZURE_BLOB_URL = 'https://githubdocs.azureedge.net'
 // Old Azure Blob Storage `enterprise` container.
@@ -36,17 +39,16 @@ type ArchivedRedirects = {
 // These files are huge so lazy-load them. But note that the
 // `readJsonFileLazily()` function will, at import-time, check that
 // the path does exist.
-const archivedRedirects: () => ArchivedRedirects = readCompressedJsonFileFallbackLazily(
+const archivedRedirects = readCompressedJsonFileFallbackLazily(
   './src/redirects/lib/static/archived-redirects-from-213-to-217.json',
-)
+) as () => ArchivedRedirects
 
 type ArchivedFrontmatterURLs = {
   [url: string]: string[]
 }
-const archivedFrontmatterValidURLS: () => ArchivedFrontmatterURLs =
-  readCompressedJsonFileFallbackLazily(
-    './src/redirects/lib/static/archived-frontmatter-valid-urls.json',
-  )
+const archivedFrontmatterValidURLS = readCompressedJsonFileFallbackLazily(
+  './src/redirects/lib/static/archived-frontmatter-valid-urls.json',
+) as () => ArchivedFrontmatterURLs
 
 // Combine all the things you need to make sure the response is
 // aggressively cached.
@@ -78,11 +80,17 @@ const cacheAggressively = (res: Response) => {
 const retryConfiguration = { limit: 3 }
 // According to our Datadog metrics, the *average* time for the
 // the 'archive_enterprise_proxy' metric is ~70ms (excluding spikes)
-// which much less than 1500ms.
+// which is much less than 3000ms.
 // We have observed errors of timeout, in production, when it was
-// set to 500ms. Let's try to be very conservative here to avoid
-// unnecessary error reporting.
-const timeoutConfiguration = { response: 1500 }
+// set to 500ms and then 1500ms. Let's be more conservative here to
+// avoid unnecessary error reporting during occasional slow responses.
+const timeoutConfiguration = { response: 3000 }
+
+// Monitoring thresholds for logging response times
+// Log warnings when responses exceed half the timeout threshold
+const WARN_RESPONSE_THRESHOLD = timeoutConfiguration.response / 2 // 1500ms
+// Log info for responses that are noticeably slow but not concerning
+const SLOW_RESPONSE_THRESHOLD = 500 // ms
 
 // This module handles requests for deprecated GitHub Enterprise versions
 // by routing them to static content in
@@ -112,7 +120,7 @@ export default async function archivedEnterpriseVersions(
       return res.redirect(redirectCode, redirectTo)
     }
 
-    const redirectJson = await getRemoteJSON(getProxyPath('redirects.json', requestedVersion), {
+    const redirectJson = (await getRemoteJSON(getProxyPath('redirects.json', requestedVersion), {
       retry: retryConfiguration,
       // This is allowed to be different compared to the other requests
       // we make because downloading the `redirects.json` once is very
@@ -120,7 +128,7 @@ export default async function archivedEnterpriseVersions(
       // And, as of 2021 that `redirects.json` is 10MB so it's more likely
       // to time out.
       timeout: { response: 1000 },
-    })
+    })) as Record<string, string>
     if (!req.context) throw new Error('No context on request')
     const [language, withoutLanguage] = splitPathByLanguage(req.path, req.context.userLanguage)
     const newRedirectTo = redirectJson[withoutLanguage]
@@ -171,7 +179,7 @@ export default async function archivedEnterpriseVersions(
     versionSatisfiesRange(requestedVersion, `>${lastVersionWithoutArchivedRedirectsFile}`) &&
     !deprecatedWithFunctionalRedirects.includes(requestedVersion)
   ) {
-    const redirectJson = await getRemoteJSON(getProxyPath('redirects.json', requestedVersion), {
+    const redirectJson = (await getRemoteJSON(getProxyPath('redirects.json', requestedVersion), {
       retry: retryConfiguration,
       // This is allowed to be different compared to the other requests
       // we make because downloading the `redirects.json` once is very
@@ -179,7 +187,7 @@ export default async function archivedEnterpriseVersions(
       // And, as of 2021 that `redirects.json` is 10MB so it's more likely
       // to time out.
       timeout: { response: 1000 },
-    })
+    })) as Record<string, string>
 
     // make redirects found via redirects.json redirect with a 301
     if (redirectJson[req.path]) {
@@ -201,10 +209,44 @@ export default async function archivedEnterpriseVersions(
     )
 
   const statsdTags = [`version:${requestedVersion}`]
+  const startTime = Date.now()
   const r = await statsd.asyncTimer(doGet, 'archive_enterprise_proxy', [
     ...statsdTags,
     `path:${req.path}`,
   ])()
+  const responseTime = Date.now() - startTime
+
+  // Log warnings for slow responses to help identify degraded performance
+  // A response time over half the timeout indicates potential issues
+  if (responseTime > WARN_RESPONSE_THRESHOLD) {
+    logger.warn('Slow response from archived enterprise content', {
+      version: requestedVersion,
+      path: req.path,
+      responseTime: `${responseTime}ms`,
+      status: r.status,
+      threshold: `${WARN_RESPONSE_THRESHOLD}ms`,
+    })
+  }
+
+  // Log errors for non-200 responses to help identify issues with archived content
+  if (r.status !== 200) {
+    logger.error('Failed to fetch archived enterprise content', {
+      version: requestedVersion,
+      path: req.path,
+      status: r.status,
+      responseTime: `${responseTime}ms`,
+      url: getProxyPath(req.path, requestedVersion),
+    })
+  }
+
+  // Log successful responses with timing for monitoring trends
+  if (r.status === 200 && responseTime > SLOW_RESPONSE_THRESHOLD) {
+    logger.info('Archived enterprise content response', {
+      version: requestedVersion,
+      responseTime: `${responseTime}ms`,
+      status: r.status,
+    })
+  }
 
   if (r.status === 200) {
     const body = await r.text()
@@ -317,6 +359,7 @@ export default async function archivedEnterpriseVersions(
 
     return res.send(modifiedBody)
   }
+
   // In releases 2.13 - 2.17, we lost access to frontmatter redirects
   //  during the archival process. This workaround finds potentially
   // relevant frontmatter redirects in currently supported pages

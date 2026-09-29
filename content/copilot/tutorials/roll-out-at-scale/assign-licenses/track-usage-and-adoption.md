@@ -18,6 +18,9 @@ redirect_from:
   - /copilot/tutorials/rolling-out-github-copilot-at-scale/measure-adoption/analyze-usage-over-time
   - /copilot/tutorials/roll-out-at-scale/measure-adoption
 allowTitleToDifferFromFilename: true
+category:
+  - Copilot usage metrics
+  - Measure success
 ---
 
 {% data reusables.copilot.usage-metrics-preview %}
@@ -28,7 +31,7 @@ To get a wider view of adoption, you can combine dashboard insights with qualita
 
 ## Prerequisite
 
-"{% data variables.product.prodname_copilot_short %} usage metrics" must be enabled on the AI control page. See [AUTOTITLE](/copilot/how-tos/administer-copilot/manage-for-enterprise/manage-enterprise-policies#defining-policies-for-your-enterprise).
+{% data reusables.copilot.copilot-metrics-dashboard-prereq %}
 
 ## Step 1: Access the usage metrics dashboard
 
@@ -89,7 +92,7 @@ Now that you have a sense of what adoption data is available to you and what the
 In some cases, you may need user-level activity data for deeper analysis or to integrate with internal BI tools. Exports are most useful when you want to analyze long-term trends or correlate adoption with other metrics (for example, productivity or enablement activities).
 
 1. In the dashboard, click **{% octicon "download" aria-hidden="true" aria-label="download" %} Export JSON** in the top-right corner.
-1. Download the NDJSON file and use [{% data variables.copilot.copilot_chat_short %}](https://github.com/copilot?ref_product=copilot&ref_type=engagement&ref_style=text&utm_source=docs-web-copilot-chat&utm_medium=docs&utm_campaign=universe25post) to analyze the data. For example, ask:
+1. Download the NDJSON file and use [{% data variables.copilot.copilot_chat_short %}](https://github.com/copilot?ref_product=copilot&ref_type=engagement&ref_style=text) to analyze the data. For example, ask:
 
    ```copilot copy prompt
     * Summarize which organizations show the largest increase in `loc_added_sum` this month.

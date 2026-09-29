@@ -6,7 +6,7 @@ name: Update Moda allowed IPs
 
 on:
   schedule:
-    - cron: '20 16 * * 4' # Run every Thursday at 16:20 UTC / 8:20 PST
+    - cron: '20 16 * * 4' # Run every Thursday at 16:20 UTC / 8:20 PST — infrastructure & releases theme
   workflow_dispatch:
 
 permissions:
@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6.0.1
 
       - name: Update list of allowed IPs
         run: |

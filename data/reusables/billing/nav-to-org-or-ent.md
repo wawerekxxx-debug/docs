@@ -1,0 +1,1 @@
+1. Navigate to your [organization](https://github.com/settings/organizations?ref_product=github&ref_type=engagement&ref_style=text) or [enterprise](https://github.com/settings/enterprises?ref_product=ghec&ref_type=engagement&ref_style=text).

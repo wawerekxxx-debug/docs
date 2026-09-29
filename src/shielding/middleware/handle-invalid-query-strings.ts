@@ -37,6 +37,10 @@ const RECOGNIZED_KEYS_BY_ANY = new Set([
   'search-overlay-ask-ai',
   // The drop-downs on "Webhook events and payloads"
   'actionType',
+  // Landing page article grid filters
+  'articles-category',
+  'articles-filter',
+  'articles-page',
   // Legacy domain tracking parameter (no longer processed but still recognized)
   'ghdomain',
   // UTM campaign tracking
@@ -138,7 +142,7 @@ export default function handleInvalidQuerystrings(
         )
       }
       defaultCacheControl(res)
-      const sp = new URLSearchParams(query as any)
+      const sp = new URLSearchParams(query as Record<string, string>)
       for (const key of keys) {
         sp.delete(key)
       }
